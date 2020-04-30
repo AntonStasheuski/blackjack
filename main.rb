@@ -13,108 +13,42 @@ class Menu
   include Validation
 
   def main
-    player, dealer = start_information
-    loop do
-      enough_money?(player, dealer)
-      game = game_start(player, dealer)
-      loop do
-        puts "Ваши очки: #{game.player.score}"
-        see_hand(game.player.hand)
-        player_turn(game)
-        dealer_turn(game) unless game.completed?
-        next unless game.completed?
+    game = Game.new
 
-        winner = game.winner
-        if winner.nil?
-          tie(game)
-        elsif winner.type == 'dealer'
-          win(game, winner) { 'Вы проиграли диллеру с картми: ' }
-        elsif winner.type == 'player'
-          win(game, winner) { 'Вы победили диллера с картми: ' }
-        end
-        play_again?
-        break
-      end
-    end
-  end
-
-  protected
-
-  def play_again?
-    choice = select_information { 'Хотите сыграть еще? 1 - да, 2 - нет' }
-    exit if choice != 1
-  end
-
-  def tie(game)
-    puts 'Ничья, у вас одинаковое кол-во очков'
-    print 'Карты диллера: '
-    see_hand(game.dealer.hand)
-    game.player.bank.tie
-    game.dealer.bank.tie
-  end
-
-  def win(game, winner)
-    print yield
-    see_hand(game.dealer.hand)
-    winner.bank.win
-  end
-
-  def dealer_turn(game)
-    score = game.dealer.score
-    draw_cards(1, game.dealer, game.deck) unless score >= 17
-  end
-
-  def start_information
     name = select_information(nil, 'name') { 'Введите ваше имя' }
-    player = Player.new(name)
-    dealer = Dealer.new
+    player, dealer = game.start_information(name)
     puts "#{player.name}, добро пожаловать в игру"
     puts "Вашего диллера зовут #{dealer.name}"
     puts "Размер вашего начального банка: #{player.bank.bank}"
     puts "Размер ставки: #{player.bank.bet}"
-    [player, dealer]
-  end
 
-  def game_start(player, dealer)
-    deck = Deck.new.generate_deck
-    player.cards = []
-    dealer.cards = []
-    player.bet
-    dealer.bet
-    game = Game.new(player, dealer, deck)
-    draw_cards(2, player, deck)
-    draw_cards(2, dealer, deck)
-    game
-  end
+    loop do
+      game.enough_money?
+      game.game_start
+      loop do
+        puts "Ваши очки: #{game.player.score}"
+        game.see_hand(player.hand) { 'Ваши карты: ' }
+        choice = select_information { "\n1 - пропуск хода, 2 - добавить карту, 3 - открыть карты" }
+        game.player_turn(player, choice)
+        game.dealer_turn(dealer) unless game.completed?
+        next unless game.completed?
 
-  def player_turn(game)
-    choice = select_information { "\n1 - пропуск хода, 2 - добавить карту, 3 - открыть карты" }
-    if choice == 2
-      draw_cards(1, game.player, game.deck)
-    elsif choice == 3
-      game.winner
-    end
-  end
-
-  def see_hand(hand)
-    hand.each { |card| print "| #{card} " }
-    puts '|'
-  end
-
-  def draw_cards(count, player, deck)
-    count.times { player.draw_card(deck) }
-  end
-
-  def enough_money?(player, dealer)
-    player_bank = player.bank.bank
-    dealer_bank = dealer.bank.bank
-    puts "\n\n\nВаш банк: #{player_bank}, диллера : #{dealer_bank}"
-    if !player_bank.positive?
-      puts 'У вас закончились деньги, приходите еще)'
-      exit
-    elsif !dealer_bank.positive?
-      puts 'У диллера закончились деньги, проваливайте!'
-      exit
+        winner ||= game.winner
+        if winner.nil?
+          puts 'Ничья'
+          print 'Карты диллера: '
+          game.tie(player, dealer)
+        elsif winner.type == 'dealer'
+          game.win(dealer, winner) { 'Вы проиграли диллеру с картми: ' }
+          puts "\n"
+        elsif winner.type == 'player'
+          game.win(dealer, winner) { 'Вы победили диллера с картми: ' }
+          puts "\n"
+        end
+        choice = select_information { 'Хотите сыграть еще? 1 - да, 2 - нет' }
+        game.play_again?(choice)
+        break
+      end
     end
   end
 

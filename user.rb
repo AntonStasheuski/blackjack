@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'bank'
-require_relative 'score'
+require_relative 'card'
 # User
 class User
   attr_reader :name, :calculator, :bank
@@ -10,11 +10,10 @@ class User
     @name = name
     @cards = []
     @bank = Bank.new
-    @calculator = Score.new
   end
 
   def hand
-    @cards.map(&:show_card)
+    @cards.map(&:face)
   end
 
   def draw_card(deck)
@@ -23,7 +22,12 @@ class User
   end
 
   def calculate_score
-    self.score = @calculator.score_calculator(@cards)
+    score = 0
+    hand = @cards.sort_by { |card| card.score.size == 2 ? 1 : 0 }
+    hand.each do |card|
+      score += score > 11 && card.score.size == 2 ? card.score.first : card.score.last
+    end
+    self.score = score
   end
 
   def bet
