@@ -36,22 +36,17 @@ class Game
     end
   end
 
-  def win(dealer, winner)
-    print yield
-    see_hand(dealer.hand)
+  def win(winner)
     winner.bank.win
   end
 
   def tie(player, dealer)
-    see_hand(dealer.hand)
     player.bank.tie
     dealer.bank.tie
   end
 
   def see_hand(hand)
-    print yield if block_given?
-    hand.each { |card| print "| #{card} " }
-    puts '|'
+    hand.map { |card| card }.join(' | ')
   end
 
   def completed?

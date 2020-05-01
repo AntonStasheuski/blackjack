@@ -28,7 +28,7 @@ class Menu
       game.game_start
       loop do
         puts "Ваши очки: #{game.player.score}"
-        game.see_hand(player.hand) { 'Ваши карты: ' }
+        puts "Ваши карты: #{game.see_hand(player.hand)}"
         choice = select_information { "\n1 - пропуск хода, 2 - добавить карту, 3 - открыть карты" }
         game.player_turn(player, choice)
         game.dealer_turn(dealer) unless game.completed?
@@ -40,10 +40,12 @@ class Menu
           print 'Карты диллера: '
           game.tie(player, dealer)
         elsif winner.type == 'dealer'
-          game.win(dealer, winner) { 'Вы проиграли диллеру с картми: ' }
+          puts "Вы проиграли диллеру с картми: #{game.see_hand(dealer.hand)}"
+          game.win(winner)
           puts "\n"
         elsif winner.type == 'player'
-          game.win(dealer, winner) { 'Вы победили диллера с картми: ' }
+          puts "Вы победили диллера с картми: #{game.see_hand(dealer.hand)}"
+          game.win(winner)
           puts "\n"
         end
         choice = select_information { 'Хотите сыграть еще? 1 - да, 2 - нет' }
