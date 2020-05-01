@@ -23,7 +23,8 @@ class Menu
     puts "Размер ставки: #{player.bank.bet}"
 
     loop do
-      game.enough_money?
+      puts "\n\n\nВаш банк: #{player.bank.bank}, диллера : #{dealer.bank.bank}"
+      puts 'У кого-то из вас закончились деньги!!!' unless game.enough_money?
       game.game_start
       loop do
         puts "Ваши очки: #{game.player.score}"

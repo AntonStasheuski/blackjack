@@ -86,13 +86,6 @@ class Game
   def enough_money?
     player_bank = @player.bank.bank
     dealer_bank = @dealer.bank.bank
-    puts "\n\n\nВаш банк: #{player_bank}, диллера : #{dealer_bank}"
-    if !player_bank.positive?
-      puts 'У вас закончились деньги, приходите еще)'
-      exit
-    elsif !dealer_bank.positive?
-      puts 'У диллера закончились деньги, проваливайте!'
-      exit
-    end
+    player_bank.positive? && dealer_bank.positive?
   end
 end
